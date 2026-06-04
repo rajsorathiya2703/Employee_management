@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TaskPriority {
+  IMPORTANT
+  BASIC
+}
+
+enum TaskStatus {
+  PENDING
+  COMPLETED
+  DELETED
+}
+
+model Task {
+  id          String       @id @default(uuid())
+
+  taskName    String
+  description String
+
+  priority    TaskPriority @default(BASIC)
+  status      TaskStatus   @default(PENDING)
+
+  dueDate     DateTime?
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("tasks")
+} 
+
+model Circular {
+  id                String   @id @default(uuid())
+  circularTitle     String
+  circularDescription String
+  circularPostDate  DateTime
+  
+  circularPostTime  String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("circulars")
+}
+
+model Employee {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+
+  attendances Attendance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Attendance {
+  id            Int      @id @default(autoincrement())
+
+  employeeId    Int
+  employee      Employee @relation(fields: [employeeId], references: [id])
+
+  attendanceDate DateTime
+
+  firstPunchIn  DateTime?
+  lastPunchOut  DateTime?
+
+  totalMinutes  Int      @default(0)
+
+  status        AttendanceStatus @default(PRESENT)
+
+  sessions      AttendanceSession[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([employeeId, attendanceDate])
+}
+
+model AttendanceSession {
+  id             Int @id @default(autoincrement())
+
+  attendanceId   Int
+  attendance     Attendance @relation(fields: [attendanceId], references: [id])
+
+  punchIn        DateTime
+  punchOut       DateTime?
+
+  durationMinute Int @default(0)
+
+  createdAt      DateTime @default(now())
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+}

@@ -6,20 +6,29 @@ import {
     ListTodo, Plus, Star, Hourglass
 } from 'lucide-react';
 import clsx from 'clsx';
+import { useEffect } from "react";
+import {
+    getTasks,
+    getDashboard,
+} from "../../service/task.service.js";
 
 export default function TaskManagement() {
     const [pagination, setPagination] = useState({
         pageIndex: 0,
         pageSize: 10,
     });
-
     const [activeTab, setActiveTab] = useState('All');
-
+    const [searchTerm, setSearchTerm] = useState('');
+    const [deletedTasks, setDeletedTasks] = useState([]);
     const columns = [
         {
-            accessorKey: 'id',
+            id: 'serialNo',
             header: '#',
-            cell: (info) => <span className="text-slate-500 font-medium">{info.getValue()}</span>
+            cell: (info) => (
+                <span className="text-slate-500 font-medium">
+                    {pagination.pageIndex * pagination.pageSize + info.row.index + 1}
+                </span>
+            )
         },
         {
             accessorKey: 'taskDetails',
@@ -77,101 +86,131 @@ export default function TaskManagement() {
             header: 'ACTIONS',
             cell: () => (
                 <div className="flex items-center gap-4">
-                    <button className="text-emerald-500 hover:text-emerald-600 transition-colors focus:outline-none bg-emerald-50 p-1.5 rounded-full">
-                        <CheckCircle2 size={16} strokeWidth={2.5} />
+                    <button
+                        onClick={async () => {
+                            await completeTask(info.row.original.id);
+                            fetchTasks();
+                            fetchDashboard();
+                        }}
+                    >
+                        <CheckCircle2 />
                     </button>
-                    <button className="text-red-400 hover:text-red-600 transition-colors focus:outline-none bg-red-50 p-1.5 rounded-full">
-                        <Trash2 size={16} strokeWidth={2.5} />
+                    <button
+                        onClick={async () => {
+                            await deleteTask(info.row.original.id);
+                            fetchTasks();
+                            fetchDashboard();
+                        }}
+                    >
+                        <Trash2 />
                     </button>
                 </div>
             )
         }
     ];
-
-    const data = [
-        {
-            id: 1,
-            title: 'Submit Daily Work Log & Progress Report',
-            description: 'Draft and submit the weekly progress update to the project manager.',
-            priority: 'Important',
-            dueDate: '3 Jun 2026',
-            status: 'Pending'
-        },
-        {
-            id: 2,
-            title: 'Review Design Specifications for HRMS Portal',
-            description: 'Go through the new Figma designs for employee onboarding flow.',
-            priority: 'Basic',
-            dueDate: '3 Jun 2026',
-            status: 'Pending'
-        },
-        {
-            id: 3,
-            title: 'Update Client Credentials & Security Keys',
-            description: 'Rotate API access keys and update documentation.',
-            priority: 'Important',
-            dueDate: '2 Jun 2026',
-            status: 'Completed'
-        },
-        {
-            id: 4,
-            title: 'Prepare Slide Deck for Monthly Review Meet',
-            description: 'Create summary slides highlighting milestones achieved.',
-            priority: 'Basic',
-            dueDate: '5 Jun 2026',
-            status: 'Pending'
-        },
-        {
-            id: 5,
-            title: 'Align with QA Team on Pending Bug Verification',
-            description: 'Test resolved issues on staging before deployment.',
-            priority: 'Basic',
-            dueDate: '1 Jun 2026',
-            status: 'Completed'
-        },
-        {
-            id: 14,
-            title: 'Submit Daily Work Log & Progress Report',
-            description: 'Draft and submit the weekly progress update to the project manager.',
-            priority: 'Important',
-            dueDate: '3 Jun 2026',
-            status: 'Pending'
-        },
-        {
-            id: 13,
-            title: 'Review Design Specifications for HRMS Portal',
-            description: 'Go through the new Figma designs for employee onboarding flow.',
-            priority: 'Basic',
-            dueDate: '3 Jun 2026',
-            status: 'Pending'
-        },
-        {
-            id: 12,
-            title: 'Update Client Credentials & Security Keys',
-            description: 'Rotate API access keys and update documentation.',
-            priority: 'Important',
-            dueDate: '2 Jun 2026',
-            status: 'Completed'
-        },
-        {
-            id: 11,
-            title: 'Prepare Slide Deck for Monthly Review Meet',
-            description: 'Create summary slides highlighting milestones achieved.',
-            priority: 'Basic',
-            dueDate: '5 Jun 2026',
-            status: 'Pending'
-        },
-        {
-            id: 10,
-            title: 'Align with QA Team on Pending Bug Verification',
-            description: 'Test resolved issues on staging before deployment.',
-            priority: 'Basic',
-            dueDate: '1 Jun 2026',
-            status: 'Completed'
-        }
-    ];
-
+    const [tasks, setTasks] = useState([]);
+    const [loading, setLoading] = useState(false);
     const tabs = ['All', 'Pending', 'Completed', 'Deleted Tasks'];
+    const [dashboard, setDashboard] = useState({
+        myDayTask: 0,
+        importantTask: 0,
+        todayDueTask: 0,
+        totalPending: 0,
+        completedTask: 0,
+    });
+
+    const fetchTasks = async () => {
+        try {
+            setLoading(true);
+
+            const params = {
+                page: pagination.pageIndex + 1,
+                limit: pagination.pageSize,
+            };
+
+            if (activeTab !== "All" && activeTab !== "Deleted Tasks") {
+                params.status = activeTab.toUpperCase();
+            }
+
+            if (searchTerm) {
+                params.search = searchTerm;
+            }
+
+            const res = await getTasks(params);
+
+            const formattedTasks = res.data.data.data.map((task) => ({
+                ...task,
+
+                // Backend -> Frontend field mapping
+                title: task.taskName,
+
+                priority:
+                    task.priority === "IMPORTANT"
+                        ? "Important"
+                        : "Basic",
+
+                status:
+                    task.status === "PENDING"
+                        ? "Pending"
+                        : task.status === "COMPLETED"
+                            ? "Completed"
+                            : "Deleted",
+            }));
+
+            setTasks(formattedTasks);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchDashboard = async () => {
+        try {
+            const res = await getDashboard();
+
+            setDashboard(res.data.data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    useEffect(() => {
+        fetchTasks();
+    }, [
+        pagination.pageIndex,
+        pagination.pageSize,
+        activeTab,
+        searchTerm
+    ]);
+
+    useEffect(() => {
+        fetchDashboard();
+    }, []);
+
+    const filteredData = (
+        activeTab === 'Deleted Tasks'
+            ? deletedTasks
+            : tasks.filter(task => {
+                const tabMatch =
+                    activeTab === 'All'
+                        ? true
+                        : task.status === activeTab;
+
+                const searchMatch =
+                    task.title
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                    task.description
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                    task.priority
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase());
+
+                return tabMatch && searchMatch;
+            })
+    );
 
     const topContent = (
         <>
@@ -192,10 +231,15 @@ export default function TaskManagement() {
                 ))}
             </div>
             <div className="relative w-full sm:w-64 shrink-0">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                     type="text"
                     placeholder="Search tasks..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 bg-white"
                 />
             </div>
@@ -223,35 +267,35 @@ export default function TaskManagement() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 shrink-0">
                 <GenericCard
                     title="MY DAY TASK"
-                    value="2"
+                    value={dashboard.myDayTask}
                     icon={<Calendar size={22} />}
                     color="purple"
                     iconPosition="right"
                 />
                 <GenericCard
                     title="IMPORTANT TASK"
-                    value="0"
+                    value={dashboard.importantTask}
                     icon={<Star size={22} />}
                     color="sky"
                     iconPosition="right"
                 />
                 <GenericCard
                     title="TODAY'S DUE TASK"
-                    value="1"
+                    value={dashboard.todayDueTask}
                     icon={<Hourglass size={22} />}
                     color="yellow"
                     iconPosition="right"
                 />
                 <GenericCard
                     title="TOTAL PENDING"
-                    value="2"
+                    value={dashboard.totalPending}
                     icon={<Clock size={22} />}
                     color="blue"
                     iconPosition="right"
                 />
                 <GenericCard
                     title="COMPLETED TASK"
-                    value="3"
+                    value={dashboard.completedTask}
                     icon={<CheckCircle2 size={22} />}
                     color="green"
                     iconPosition="right"
@@ -262,9 +306,9 @@ export default function TaskManagement() {
             <div className="flex-1 min-h-[520px]">
                 <AdvancedDataTable
                     columns={columns}
-                    data={data}
-                    totalRecords={10}
-                    pageCount={1}
+                    data={filteredData}
+                    totalRecords={filteredData.length}
+                    pageCount={Math.ceil(filteredData.length / pagination.pageSize)}
                     pagination={pagination}
                     setPagination={setPagination}
                     topContent={topContent}

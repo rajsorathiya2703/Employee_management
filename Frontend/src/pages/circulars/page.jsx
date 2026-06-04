@@ -3,57 +3,84 @@ import { FileText } from 'lucide-react';
 import CircularCard from '../../component/common/CircularCard';
 import CircularDialog from '../../component/common/CircularDialog';
 import clsx from 'clsx';
+import { useEffect } from "react";
+import { getCirculars } from "../../service/circular.service";
 
-const CIRCULARS_DATA = [
-    {
-        id: 1,
-        title: 'Diwali Celebration & Office Holidays',
-        date: '09:51 PM, 11th May 2026',
-        body: 'Dear Team, We would like to wish you and your families a very Happy Diwali! Please note that the office will remain closed on November 12th and 13th for the festival celebrations. Normal operations will resume on Tuesday, November 14th. Enjoy the festivities and have a safe, wonderful time! Warm regards, HR Department',
-        fullBody: `Dear Team,\n\nWe would like to wish you and your families a very Happy Diwali! Please note that the office will remain closed on November 12th and 13th for the festival celebrations. Normal operations will resume on Tuesday, November 14th.\n\nEnjoy the festivities and have a safe, wonderful time!\n\nWarm regards,\nHR Department`,
-    },
-    {
-        id: 2,
-        title: 'Quarterly Town Hall Meeting – Q2',
-        date: '10:51 PM, 7th May 2026',
-        body: 'Hi Everyone, Our Q2 Quarterly Town Hall is scheduled for next Thursday, May 14th, 2026, at 03:00 PM in the main cafeteria and streamable online. We will review our financial updates, milestone achievements, and upcoming initiatives. Your attendance is highly encouraged.',
-        fullBody: `Hi Everyone,\n\nOur Q2 Quarterly Town Hall is scheduled for next Thursday, May 14th, 2026, at 03:00 PM in the main cafeteria and streamable online.\n\nWe will review our financial updates, milestone achievements, and upcoming initiatives. Your attendance is highly encouraged.\n\nPlease confirm your attendance by May 12th.\n\nBest regards,\nManagement Team`,
-    },
-    {
-        id: 3,
-        title: 'New Work From Home Policy – Effective June 1st',
-        date: '08:30 AM, 2nd May 2026',
-        body: 'Dear Employees, We are pleased to announce an updated Work From Home policy effective June 1st, 2026. Employees are now permitted to work remotely up to 2 days per week, subject to manager approval. Please review the updated policy document attached for full guidelines and eligibility criteria.',
-        fullBody: `Dear Employees,\n\nWe are pleased to announce an updated Work From Home policy effective June 1st, 2026. Employees are now permitted to work remotely up to 2 days per week, subject to manager approval.\n\nPlease review the updated policy document attached for full guidelines and eligibility criteria.\n\nFor any questions, please contact HR at hr@minehr.com.\n\nBest regards,\nHR Department`,
-    },
-    {
-        id: 4,
-        title: 'Annual Health & Wellness Check-Up Drive',
-        date: '11:00 AM, 28th April 2026',
-        body: 'Dear Team, We are organizing an Annual Health & Wellness Check-Up Drive for all employees on May 20th and 21st, 2026. The check-up will be conducted on-site at the company clinic from 9:00 AM to 5:00 PM. Participation is voluntary but strongly encouraged as part of our employee well-being initiative.',
-        fullBody: `Dear Team,\n\nWe are organizing an Annual Health & Wellness Check-Up Drive for all employees on May 20th and 21st, 2026.\n\nThe check-up will be conducted on-site at the company clinic from 9:00 AM to 5:00 PM. Services include:\n- Blood pressure & sugar check\n- BMI assessment\n- Eye check-up\n- General physician consultation\n\nParticipation is voluntary but strongly encouraged as part of our employee well-being initiative.\n\nKindly register by May 15th via the HR portal.\n\nBest wishes,\nHR & Admin Team`,
-    },
-    {
-        id: 5,
-        title: 'Office Relocation – New Address Effective May 15th',
-        date: '09:00 AM, 20th April 2026',
-        body: 'Dear All, We are excited to inform you that our office will be relocating to a new premises effective May 15th, 2026. The new office is situated at Block B, 4th Floor, Sunrise Business Park, Ahmedabad. Detailed directions and parking information will be shared separately.',
-        fullBody: `Dear All,\n\nWe are excited to inform you that our office will be relocating to a new premises effective May 15th, 2026.\n\nNew Address:\nBlock B, 4th Floor,\nSunrise Business Park,\nAhmedabad – 380015\n\nDetailed directions and parking information will be shared separately. The last day at the current office is May 14th, 2026.\n\nThank you for your cooperation during this transition.\n\nBest regards,\nAdmin Team`,
-    },
-    {
-        id: 6,
-        title: 'Updated Leave Policy for 2026',
-        date: '03:15 PM, 10th April 2026',
-        body: 'Dear Employees, Please be informed that the company leave policy has been revised for the year 2026. Key changes include an increase in casual leave from 8 to 10 days, introduction of 2 days of volunteer leave, and clarification on carry-forward rules. The full updated policy is available on the HR portal.',
-        fullBody: `Dear Employees,\n\nPlease be informed that the company leave policy has been revised for the year 2026. Key changes include:\n\n1. Casual Leave increased from 8 to 10 days.\n2. Introduction of 2 days of Volunteer Leave per year.\n3. Carry-forward of up to 5 unused CL days to the next year.\n4. Medical leave now requires a doctor's certificate for leaves exceeding 2 days.\n\nThe full updated policy document is available on the HR portal under "Policies & Guidelines".\n\nFor clarifications, please reach out to HR.\n\nWarm regards,\nHR Department`,
-    },
-];
 
 const FILTER_TABS = ['RECENT', 'MAY', 'APRIL', 'CUSTOM'];
 
 export default function Circulars() {
+
+    const [circulars, setCirculars] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const [fromDate, setFromDate] = useState("");
+    const [toDate, setToDate] = useState("");
     const [activeTab, setActiveTab] = useState('RECENT');
     const [selectedCircular, setSelectedCircular] = useState(null);
+
+    const fetchCirculars = async () => {
+        try {
+            setLoading(true);
+
+            const params = {};
+
+            if (activeTab === "MAY") {
+                params.month = 5;
+            }
+
+            if (activeTab === "APRIL") {
+                params.month = 4;
+            }
+
+            if (
+                activeTab === "CUSTOM" &&
+                fromDate &&
+                toDate
+            ) {
+                params.fromDate = fromDate;
+                params.toDate = toDate;
+            }
+
+            const res = await getCirculars(params);
+
+            const formattedCirculars =
+                res.data.data.data.map((item) => ({
+                    id: item.id,
+
+                    title: item.circularTitle,
+
+                    date: `${item.circularPostTime}, ${new Date(
+                        item.circularPostDate
+                    ).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                    })}`,
+
+                    body:
+                        item.circularDescription.length > 180
+                            ? item.circularDescription.substring(
+                                0,
+                                180
+                            ) + "..."
+                            : item.circularDescription,
+
+                    fullBody:
+                        item.circularDescription,
+                }));
+
+            setCirculars(formattedCirculars);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCirculars();
+    }, [activeTab]);
 
     return (
         <div className="flex flex-col h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
@@ -92,17 +119,26 @@ export default function Circulars() {
                                 <label className="text-sm text-slate-500 font-medium">From:</label>
                                 <input
                                     type="date"
-                                    className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                                    value={fromDate}
+                                    onChange={(e) =>
+                                        setFromDate(e.target.value)
+                                    }
                                 />
                             </div>
                             <div className="flex items-center gap-2">
                                 <label className="text-sm text-slate-500 font-medium">To:</label>
                                 <input
                                     type="date"
-                                    className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                                    value={toDate}
+                                    onChange={(e) =>
+                                        setToDate(e.target.value)
+                                    }
                                 />
                             </div>
-                            <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-1.5 rounded-lg text-sm font-semibold tracking-wide shadow-sm transition-colors ml-1">
+                            <button
+                                onClick={fetchCirculars}
+                                className="bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-1.5 rounded-lg text-sm font-semibold tracking-wide shadow-sm transition-colors ml-1"
+                            >
                                 Get
                             </button>
                         </div>
@@ -112,7 +148,7 @@ export default function Circulars() {
 
             {/* Circular Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 relative">
-                {CIRCULARS_DATA.map((circular) => (
+                {circulars.map((circular) => (
                     <div key={circular.id} className="relative">
                         {/* Top gradient accent line on each card */}
                         <div className="absolute top-0 left-5 right-5 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full z-10" />
