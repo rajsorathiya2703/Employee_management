@@ -34,13 +34,16 @@ export const punchIn = async (employeeId: number) => {
 export const punchOut = async (employeeId: number) => {
   const now = new Date();
 
+  // Only look at today's attendance record, not the latest across all days
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const attendance = await prisma.attendance.findFirst({
-    where: { employeeId },
-    orderBy: { attendanceDate: "desc" },
+    where: { employeeId, attendanceDate: today },
   });
 
   if (!attendance) {
-    throw new Error("Attendance not found");
+    throw new Error("No attendance record found for today. Please punch in first.");
   }
 
   const session = await prisma.attendanceSession.findFirst({
@@ -49,11 +52,12 @@ export const punchOut = async (employeeId: number) => {
   });
 
   if (!session) {
-    throw new Error("No active session found");
+    throw new Error("No active session found. You are not currently punched in.");
   }
 
-  const durationMinute = Math.floor(
-    (now.getTime() - new Date(session.punchIn).getTime()) / 1000 / 60
+  const durationMinute = Math.max(
+    1,
+    Math.floor((now.getTime() - new Date(session.punchIn).getTime()) / 1000 / 60)
   );
 
   await prisma.attendanceSession.update({
@@ -75,9 +79,43 @@ export const punchOut = async (employeeId: number) => {
   return true;
 };
 
+export const getSessionsByAttendanceId = async (attendanceId: number) => {
+  return prisma.attendanceSession.findMany({
+    where: { attendanceId },
+    orderBy: { id: "asc" },
+  });
+};
+
 export const getMyAttendance = async (employeeId: number) => {
   return prisma.attendance.findMany({
     where: { employeeId },
     orderBy: { attendanceDate: "desc" },
   });
+};
+
+export const getTodaySessions = async (employeeId: number) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const attendance = await prisma.attendance.findFirst({
+    where: { employeeId, attendanceDate: today },
+  });
+
+  if (!attendance) {
+    return { isPunchedIn: false, sessions: [], totalMinutes: 0 };
+  }
+
+  const sessions = await prisma.attendanceSession.findMany({
+    where: { attendanceId: attendance.id },
+    orderBy: { id: "asc" },
+  });
+
+  const activeSession = sessions.find((s) => s.punchOut === null);
+
+  return {
+    isPunchedIn: !!activeSession,
+    activePunchIn: activeSession ? activeSession.punchIn : null,
+    sessions,
+    totalMinutes: attendance.totalMinutes,
+  };
 };

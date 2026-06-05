@@ -78,12 +78,22 @@ export interface AttendanceRecord {
   status: AttendanceStatus;
 }
 
+export interface AttendanceSession {
+  id: number;
+  attendanceId: number;
+  punchIn: string;
+  punchOut: string | null;
+  durationMinute: number;
+}
+
 export interface FormattedAttendance {
   id: number;
+  attendanceId: number;   // raw DB id — used to fetch sessions on expand
   date: string;
   punchIn: string;
   punchOut: string;
   workingHours: string;
+  totalMinutes: number;   // raw minutes — used for "Total Hours" display
   status: string;
 }
 

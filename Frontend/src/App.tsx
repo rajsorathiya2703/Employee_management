@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import Sidebar from './component/UI/Sidebar';
 import Header from './component/UI/Header';
+import Dashboard from './pages/page';
 import TaskManagement from './pages/task-management/page';
 import Circulars from './pages/circulars/page';
 import AttendanceRequests from './pages/attendance/attendence-request/page';
@@ -32,14 +33,9 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
-        <Route
-          index
-          element={
-            <div className="p-4">
-              <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-            </div>
-          }
-        />
+        {/* Redirect bare / to the dashboard */}
+        <Route index element={<Navigate to="/employee/dashboard" replace />} />
+        <Route path="employee/dashboard" element={<Dashboard />} />
         <Route path="tasks" element={<TaskManagement />} />
         <Route path="circulars" element={<Circulars />} />
         <Route path="employee/attendance/my" element={<MyAttendance />} />

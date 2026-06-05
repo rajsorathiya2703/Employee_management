@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, Fragment } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -23,6 +23,8 @@ interface AdvancedDataTableProps<T extends object> {
   topContent?: ReactNode;
   showMonthYearFilter?: boolean;
   onMonthYearGet?: () => void;
+  /** Optional: render expanded content below a row. Return null/undefined to show nothing. */
+  expandedRowContent?: (row: T) => ReactNode;
 }
 
 export default function AdvancedDataTable<T extends object>({
@@ -37,6 +39,7 @@ export default function AdvancedDataTable<T extends object>({
   topContent,
   showMonthYearFilter,
   onMonthYearGet,
+  expandedRowContent,
 }: AdvancedDataTableProps<T>) {
   const table = useReactTable<T>({
     data,
@@ -182,19 +185,19 @@ export default function AdvancedDataTable<T extends object>({
               </tr>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-slate-50/50 transition-colors duration-150 group"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap"
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
+                <Fragment key={row.id}>
+                  <tr className="hover:bg-slate-50/50 transition-colors duration-150 group">
+                    {row.getVisibleCells().map((cell) => (
+                      <td
+                        key={cell.id}
+                        className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap"
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                  {expandedRowContent && expandedRowContent(row.original)}
+                </Fragment>
               ))
             )}
           </tbody>

@@ -35,7 +35,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: 'MineHR Solutions pvt ltd', icon: Building2, path: '#', isCompany: true },
-  { name: 'Dashboard', icon: LayoutGrid, path: '/' },
+  { name: 'Dashboard', icon: LayoutGrid, path: '/employee/dashboard' },
   { name: 'Task Management', icon: ListTodo, path: '/tasks' },
   { name: 'Circulars', icon: FileText, path: '/circulars' },
   {
@@ -122,7 +122,7 @@ export default function Sidebar({ isOpen = true }: SidebarProps) {
               location.pathname.startsWith(item.path) && item.path !== '/';
             const isExactActive =
               location.pathname === item.path ||
-              (item.path === '/' && location.pathname === '/dashboard');
+              (item.path === '/employee/dashboard' && location.pathname === '/');
             const isActive = isExactActive || isParentActive;
             const Icon = item.icon;
             const isMenuOpen = openMenus[item.name];

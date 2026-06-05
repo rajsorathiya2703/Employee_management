@@ -8,3 +8,15 @@ export const getMyAttendance = (
     params,
   });
 };
+
+export const punchIn = (employeeId: number) =>
+  axiosInstance.post("/attendance/punch-in", { employeeId });
+
+export const punchOut = (employeeId: number) =>
+  axiosInstance.post("/attendance/punch-out", { employeeId });
+
+export const getTodaySessions = (employeeId: number) =>
+  axiosInstance.get(`/attendance/today-sessions/${employeeId}`);
+
+export const getSessionsByAttendanceId = (attendanceId: number) =>
+  axiosInstance.get(`/attendance/sessions/${attendanceId}`);

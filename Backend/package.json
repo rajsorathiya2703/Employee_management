@@ -4,9 +4,10 @@
   "description": "",
   "main": "src/server.ts",
   "scripts": {
-    "start": "tsx src/server.ts",
+    "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
+    "postbuild": "prisma generate",
     "seed:tasks": "tsx src/seed/task.seed.ts",
     "seed:circulars": "tsx src/seed/circular.seed.ts",
     "seed:attendance": "tsx src/seed/my-attendance.seed.ts"

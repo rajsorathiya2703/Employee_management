@@ -20,6 +20,26 @@ export const punchOut = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+export const getTodaySessions = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { employeeId } = req.params;
+    const result = await service.getTodaySessions(Number(employeeId));
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: (error as Error).message });
+  }
+};
+
+export const getSessionsByAttendanceId = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { attendanceId } = req.params;
+    const result = await service.getSessionsByAttendanceId(Number(attendanceId));
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: (error as Error).message });
+  }
+};
+
 export const getMyAttendance = async (req: Request, res: Response): Promise<void> => {
   try {
     const { employeeId } = req.params;
