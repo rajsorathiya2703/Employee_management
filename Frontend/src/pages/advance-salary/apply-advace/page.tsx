@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { CreditCard, Trash2, Loader2 } from 'lucide-react';
+import { CreditCard, Trash2 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import AdvancedDataTable from '../../../component/common/AdvancedDataTable';
