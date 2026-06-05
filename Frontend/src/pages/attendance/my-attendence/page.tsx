@@ -8,10 +8,7 @@ import {
   getSessionsByAttendanceId,
 } from '../../../service/attendance.service';
 import type { FormattedAttendance, AttendanceSession } from '../../../types';
-
-// ─── helpers ─────────────────────────────────────────────────────────────────
-
-const EMPLOYEE_ID = 1; // replace with auth context later
+import { useAuth } from '../../../context/AuthContext';
 
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('en-GB', {
@@ -44,6 +41,8 @@ const TOTAL_COLUMNS = 6;
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MyAttendance() {
+  const { user } = useAuth();
+  const EMPLOYEE_ID = user?.id ?? 1;
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,

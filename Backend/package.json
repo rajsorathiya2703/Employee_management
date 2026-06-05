@@ -10,19 +10,30 @@
     "postbuild": "prisma generate",
     "seed:tasks": "tsx src/seed/task.seed.ts",
     "seed:circulars": "tsx src/seed/circular.seed.ts",
-    "seed:attendance": "tsx src/seed/my-attendance.seed.ts"
+    "seed:attendance": "tsx src/seed/my-attendance.seed.ts",
+    "seed:attendance-requests": "tsx src/seed/attendance-request.seed.ts",
+    "seed:expenses": "tsx src/seed/expense.seed.ts",
+    "seed:auth": "tsx src/seed/auth-employee.seed.ts",
+    "seed:second-user": "tsx src/seed/second-user.seed.ts",
+    "seed:advance-salary": "tsx src/seed/advance-salary.seed.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/nodemailer": "^8.0.0",
+    "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
     "morgan": "^1.11.0",
+    "nodemailer": "^8.0.10",
     "prisma": "^6.19.3"
   },
   "devDependencies": {

@@ -17,6 +17,7 @@ import {
   punchOut as apiPunchOut,
   getTodaySessions,
 } from '../service/attendance.service';
+import { useAuth } from '../context/AuthContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,8 +35,8 @@ interface TodaySessionsData {
   totalMinutes: number;
 }
 
-// Hard-coded until auth is wired up
-const EMPLOYEE_ID = 1;
+// Hard-coded until auth is wired up — now using AuthContext
+const EMPLOYEE_ID_FALLBACK = 1;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -58,6 +59,8 @@ function minutesToHours(minutes: number) {
 // ─── PunchInCard ─────────────────────────────────────────────────────────────
 
 function PunchInCard() {
+  const { user } = useAuth();
+  const EMPLOYEE_ID = user?.id ?? EMPLOYEE_ID_FALLBACK;
   const [isPunchedIn, setIsPunchedIn]   = useState(false);
   const [seconds, setSeconds]           = useState(0);
   const [sessions, setSessions]         = useState<AttendanceSession[]>([]);
@@ -245,6 +248,8 @@ function PunchInCard() {
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const firstName = user?.name?.split(' ')[0] ?? 'there';
   const stats = {
     holidays: 0,
     assets: 0,
@@ -263,7 +268,7 @@ export default function Dashboard() {
       <div className="flex items-center gap-3 shrink-0">
         <LayoutGrid size={28} className="text-slate-700" strokeWidth={2} />
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Welcome, Raj!</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Welcome, {firstName}!</h1>
           <p className="text-slate-500 text-sm mt-0.5">
             Here's your workspace overview for today.
           </p>

@@ -53,8 +53,17 @@ model Employee {
   name      String
   email     String   @unique
   password  String
+  phone     String?
 
-  attendances Attendance[]
+  otpCode   String?
+  otpExpiry DateTime?
+
+  refreshToken String?
+
+  attendances         Attendance[]
+  attendanceRequests  AttendanceRequest[]
+  expenses            Expense[]
+  advanceRequests     AdvanceSalaryRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -101,4 +110,109 @@ enum AttendanceStatus {
   PRESENT
   ABSENT
   HALF_DAY
+}
+
+enum AttendanceRequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+enum AttendanceRequestType {
+  PUNCH_IN_ADJUSTMENT
+  PUNCH_OUT_ADJUSTMENT
+  FULL_DAY_PRESENT
+  HALF_DAY_PRESENT
+  WORK_FROM_HOME
+  OTHER
+}
+
+model AttendanceRequest {
+  id          Int                      @id @default(autoincrement())
+
+  employeeId  Int
+  employee    Employee                 @relation(fields: [employeeId], references: [id])
+
+  date        DateTime
+
+  type        AttendanceRequestType
+  reason      String
+
+  status      AttendanceRequestStatus  @default(PENDING)
+
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+
+  @@map("attendance_requests")
+}
+
+// ─── Expense ─────────────────────────────────────────────────────────────────
+
+enum ExpenseStatus {
+  PENDING
+  PAID
+  UNPAID
+  REJECTED
+}
+
+enum ExpenseType {
+  AMOUNT_WISE
+  UNIT_WISE
+}
+
+model Expense {
+  id                 Int           @id @default(autoincrement())
+  expenseCode        String        @unique  // e.g. EXP4177
+
+  employeeId         Int
+  employee           Employee      @relation(fields: [employeeId], references: [id])
+
+  title              String
+  date               DateTime
+  siteName           String
+
+  amount             Decimal       @db.Decimal(10, 2)
+
+  category           String
+  expenseType        ExpenseType   @default(AMOUNT_WISE)
+
+  unit               String?
+  unitRate           Decimal?      @db.Decimal(10, 2)
+
+  multiLevelApproval String?
+
+  status             ExpenseStatus @default(PENDING)
+
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@map("expenses")
+}
+
+// ─── Advance Salary ───────────────────────────────────────────────────────────
+
+enum AdvanceSalaryStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+model AdvanceSalaryRequest {
+  id             Int                  @id @default(autoincrement())
+
+  employeeId     Int
+  employee       Employee             @relation(fields: [employeeId], references: [id])
+
+  salaryMonth    String               // e.g. "2025-08"
+  amount         Decimal              @db.Decimal(10, 2)
+  remark         String
+
+  status         AdvanceSalaryStatus  @default(PENDING)
+  declinedReason String?
+  resolvedAt     DateTime?
+
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@map("advance_salary_requests")
 }

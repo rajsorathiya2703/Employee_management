@@ -20,6 +20,18 @@ export const punchOut = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+export const getMonthlyAttendance = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { employeeId } = req.params;
+    const month = parseInt((req.query.month as string) || String(new Date().getMonth() + 1));
+    const year  = parseInt((req.query.year  as string) || String(new Date().getFullYear()));
+    const result = await service.getMonthlyAttendance(Number(employeeId), month, year);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: (error as Error).message });
+  }
+};
+
 export const getTodaySessions = async (req: Request, res: Response): Promise<void> => {
   try {
     const { employeeId } = req.params;

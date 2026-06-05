@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import Sidebar from './component/UI/Sidebar';
 import Header from './component/UI/Header';
+import ProtectedRoute from './component/common/ProtectedRoute';
+import LoginPage from './pages/auth/login/page';
 import Dashboard from './pages/page';
 import TaskManagement from './pages/task-management/page';
 import Circulars from './pages/circulars/page';
 import AttendanceRequests from './pages/attendance/attendence-request/page';
 import MyAttendance from './pages/attendance/my-attendence/page';
+import MonthlyAttendance from './pages/attendance/monthely-attendence/page';
 import MyExpenses from './pages/my-expenses/page';
 import ApplyAdvance from './pages/advance-salary/apply-advace/page';
 import AdvanceHistory from './pages/advance-salary/advanc-history/page';
@@ -32,18 +35,27 @@ function MainLayout() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
-        {/* Redirect bare / to the dashboard */}
-        <Route index element={<Navigate to="/employee/dashboard" replace />} />
-        <Route path="employee/dashboard" element={<Dashboard />} />
-        <Route path="tasks" element={<TaskManagement />} />
-        <Route path="circulars" element={<Circulars />} />
-        <Route path="employee/attendance/my" element={<MyAttendance />} />
-        <Route path="employee/attendance/requests" element={<AttendanceRequests />} />
-        <Route path="employee/expenses" element={<MyExpenses />} />
-        <Route path="employee/advance-salary/apply" element={<ApplyAdvance />} />
-        <Route path="employee/advance-salary/history" element={<AdvanceHistory />} />
+      {/* Public route */}
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Protected routes — wrapped in ProtectedRoute */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<Navigate to="/employee/dashboard" replace />} />
+          <Route path="employee/dashboard" element={<Dashboard />} />
+          <Route path="tasks" element={<TaskManagement />} />
+          <Route path="circulars" element={<Circulars />} />
+          <Route path="employee/attendance/my" element={<MyAttendance />} />
+          <Route path="employee/attendance/monthly" element={<MonthlyAttendance />} />
+          <Route path="employee/attendance/requests" element={<AttendanceRequests />} />
+          <Route path="employee/expenses" element={<MyExpenses />} />
+          <Route path="employee/advance-salary/apply" element={<ApplyAdvance />} />
+          <Route path="employee/advance-salary/history" element={<AdvanceHistory />} />
+        </Route>
       </Route>
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
