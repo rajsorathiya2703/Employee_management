@@ -251,3 +251,34 @@ export interface Employee {
   createdAt: string;
   updatedAt: string;
 }
+
+// ─── Salary Slip ─────────────────────────────────────────────────────────────
+
+export interface SalaryComponent {
+  heading: string;
+  amount: number;
+}
+
+export interface SalarySlipRaw {
+  id: number;
+  employeeId: number;
+  salaryMonth: string;          // "YYYY-MM"
+  department: string;
+  designation: string;
+  bankName: string;
+  accountNo: string;
+  panNo: string;
+  salaryMode: string;
+  monthWorkingDays: number;
+  presentDays: number;
+  paidLeaves: number;
+  unpaidLeaves: number;
+  joiningGrossSalary: string;   // Decimal as string
+  earnings: SalaryComponent[];
+  deductions: SalaryComponent[];
+  grossSalary: string;
+  totalDeductions: string;
+  netPay: string;
+  createdAt: string;
+  updatedAt: string;
+}

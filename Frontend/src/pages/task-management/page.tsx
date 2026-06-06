@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import AdvancedDataTable from '../../component/common/AdvancedDataTable';
 import GenericCard from '../../component/common/GenericCard';
+import AddTaskDialog from './[id]/page';
 import {
   CheckCircle2, Clock, Trash2, CheckCircle, Calendar, Search,
   ListTodo, Plus, Star, Hourglass,
@@ -36,6 +37,8 @@ export default function TaskManagement() {
     totalPending: 0,
     completedTask: 0,
   });
+
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
   const tabs: TabLabel[] = ['All', 'Pending', 'Completed', 'Deleted Tasks'];
 
@@ -97,6 +100,16 @@ export default function TaskManagement() {
   useEffect(() => {
     fetchDashboard();
   }, []);
+
+  /** Prepend the newly created task to the list and bump dashboard counters */
+  const handleTaskCreated = (newTask: FormattedTask) => {
+    setTasks((prev) => [newTask, ...prev]);
+    setDashboard((prev) => ({
+      ...prev,
+      myDayTask: prev.myDayTask + 1,
+      totalPending: prev.totalPending + 1,
+    }));
+  };
 
   // After formatting, task.status is a UI label: 'Pending' | 'Completed' | 'Deleted'
   type UIStatus = 'Pending' | 'Completed' | 'Deleted';
@@ -254,6 +267,13 @@ export default function TaskManagement() {
 
   return (
     <div className="flex flex-col gap-6 h-full overflow-y-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      {/* Add Task Dialog */}
+      <AddTaskDialog
+        open={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        onCreated={handleTaskCreated}
+      />
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
         <div>
@@ -265,7 +285,10 @@ export default function TaskManagement() {
             View, prioritize and manage your tasks in a single view
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm">
+        <button
+          onClick={() => setShowAddDialog(true)}
+          className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm"
+        >
           <Plus size={18} strokeWidth={2.5} />
           Add Task
         </button>

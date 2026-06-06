@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import path from "path";
 import taskRoutes from "./module/task/task.routes";
 import circularRoutes from "./module/circular/circular.routes";
 import employeeRoutes from "./module/employees/employee.routes";
@@ -10,6 +11,7 @@ import attendanceRoutes from "./module/attendance/attendance.routes";
 import expenseRoutes from "./module/expense/expense.routes";
 import authRoutes from "./module/auth/auth.routes";
 import advanceSalaryRoutes from "./module/advance-salary/advance-salary.routes";
+import salarySlipRoutes from "./module/salary-slip/salary-slip.routes";
 
 const app = express();
 
@@ -19,13 +21,18 @@ const app = express();
 |--------------------------------------------------------------------------
 */
 
-// Allow requests from the Vite dev server.
+// Allow requests from the Vite dev server and any configured production origins.
 // withCredentials=true on the client requires a specific origin — not "*".
-const allowedOrigins = [
+//
+// CLIENT_URL can be a single URL or a comma-separated list, e.g.:
+//   CLIENT_URL=https://your-app.vercel.app,https://your-app-git-main.vercel.app
+const allowedOrigins: string[] = [
   "http://localhost:5173",
   "http://localhost:3000",
-  process.env.CLIENT_URL,
-].filter(Boolean) as string[];
+  ...(process.env.CLIENT_URL
+    ? process.env.CLIENT_URL.split(",").map((u) => u.trim()).filter(Boolean)
+    : []),
+];
 
 app.use(
   cors({
@@ -40,11 +47,15 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from the uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
 
 /*
 |--------------------------------------------------------------------------
@@ -72,6 +83,7 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/advance-salary", advanceSalaryRoutes);
+app.use("/api/salary-slips", salarySlipRoutes);
 
 /*
 |--------------------------------------------------------------------------

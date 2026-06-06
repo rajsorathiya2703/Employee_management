@@ -13,6 +13,8 @@ import MonthlyAttendance from './pages/attendance/monthely-attendence/page';
 import MyExpenses from './pages/my-expenses/page';
 import ApplyAdvance from './pages/advance-salary/apply-advace/page';
 import AdvanceHistory from './pages/advance-salary/advanc-history/page';
+import SalarySlipPage from './pages/salary-slip/page';
+import MyProfilePage from './pages/profile/page';
 
 function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -51,6 +53,8 @@ export default function App() {
           <Route path="employee/expenses" element={<MyExpenses />} />
           <Route path="employee/advance-salary/apply" element={<ApplyAdvance />} />
           <Route path="employee/advance-salary/history" element={<AdvanceHistory />} />
+          <Route path="employee/salary-slip" element={<SalarySlipPage />} />
+          <Route path="employee/profile" element={<MyProfilePage />} />
         </Route>
       </Route>
 

@@ -55,6 +55,16 @@ model Employee {
   password  String
   phone     String?
 
+  // Profile fields
+  firstName       String?
+  lastName        String?
+  personalEmail   String?
+  designation     String?
+  department      String?
+  branch          String?
+  dateOfJoining   DateTime?
+  profilePhoto    String?
+
   otpCode   String?
   otpExpiry DateTime?
 
@@ -64,6 +74,7 @@ model Employee {
   attendanceRequests  AttendanceRequest[]
   expenses            Expense[]
   advanceRequests     AdvanceSalaryRequest[]
+  salarySlips         SalarySlip[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -215,4 +226,48 @@ model AdvanceSalaryRequest {
   updatedAt      DateTime             @updatedAt
 
   @@map("advance_salary_requests")
+}
+
+// ─── Salary Slip ──────────────────────────────────────────────────────────────
+
+model SalarySlip {
+  id             Int      @id @default(autoincrement())
+
+  employeeId     Int
+  employee       Employee @relation(fields: [employeeId], references: [id])
+
+  // e.g. "2025-04"
+  salaryMonth    String
+
+  // Employee info snapshot
+  department     String   @default("")
+  designation    String   @default("")
+  bankName       String   @default("")
+  accountNo      String   @default("")
+  panNo          String   @default("")
+  salaryMode     String   @default("Bank Transfer")
+
+  // Attendance snapshot
+  monthWorkingDays Int    @default(0)
+  presentDays      Int    @default(0)
+  paidLeaves       Float  @default(0)
+  unpaidLeaves     Float  @default(0)
+  joiningGrossSalary Decimal @default(0) @db.Decimal(12,2)
+
+  // Earnings (stored as JSON array: [{heading, amount}])
+  earnings       Json     @default("[]")
+
+  // Deductions (stored as JSON array: [{heading, amount}])
+  deductions     Json     @default("[]")
+
+  // Computed totals
+  grossSalary    Decimal  @db.Decimal(12,2) @default(0)
+  totalDeductions Decimal @db.Decimal(12,2) @default(0)
+  netPay         Decimal  @db.Decimal(12,2) @default(0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([employeeId, salaryMonth])
+  @@map("salary_slips")
 }

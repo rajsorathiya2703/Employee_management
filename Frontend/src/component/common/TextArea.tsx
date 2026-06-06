@@ -1,0 +1,79 @@
+import { forwardRef, TextareaHTMLAttributes } from 'react';
+import clsx from 'clsx';
+
+export interface TextAreaProps
+  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'rows'> {
+  rows?: number;
+  label?: string;
+  placeholder?: string;
+  helperText?: string;
+  errorMessage?: string;
+  required?: boolean;
+  disabled?: boolean;
+  className?: string;
+}
+
+const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
+  (
+    {
+      rows = 3,
+      label,
+      name,
+      placeholder,
+      helperText,
+      errorMessage,
+      required,
+      disabled,
+      className,
+      value,
+      onChange,
+      onBlur,
+      ...rest
+    },
+    ref
+  ) => {
+    return (
+      <div className={clsx('flex flex-col gap-1.5', className)}>
+        {label && (
+          <label
+            htmlFor={name}
+            className="text-sm font-semibold text-slate-700"
+          >
+            {label}
+            {required && <span className="text-red-500 ml-0.5">*</span>}
+          </label>
+        )}
+
+        <textarea
+          id={name}
+          name={name}
+          ref={ref}
+          rows={rows}
+          placeholder={placeholder}
+          disabled={disabled}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          className={clsx(
+            'border rounded-lg px-3 pt-2 text-sm text-slate-700 bg-white',
+            'focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 w-full',
+            'resize-y disabled:opacity-50 disabled:cursor-not-allowed',
+            errorMessage ? 'border-red-500' : 'border-slate-200'
+          )}
+          {...rest}
+        />
+
+        {errorMessage && (
+          <span className="text-sm text-red-500">{errorMessage}</span>
+        )}
+        {!errorMessage && helperText && (
+          <span className="text-sm text-slate-400">{helperText}</span>
+        )}
+      </div>
+    );
+  }
+);
+
+TextArea.displayName = 'TextArea';
+
+export default TextArea;

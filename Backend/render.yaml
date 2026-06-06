@@ -12,6 +12,10 @@ services:
         fromDatabase:
           name: employee-db
           property: connectionString
+      # Set this to your Vercel frontend URL (no trailing slash).
+      # Multiple URLs: comma-separated, e.g. https://app.vercel.app,https://app-git-main.vercel.app
+      - key: CLIENT_URL
+        value: https://your-frontend.vercel.app
 
 databases:
   - name: employee-db

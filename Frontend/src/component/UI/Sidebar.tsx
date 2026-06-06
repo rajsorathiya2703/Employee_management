@@ -61,7 +61,7 @@ const navItems: NavItem[] = [
       { name: 'Advance History', path: '/employee/advance-salary/history' },
     ],
   },
-  { name: 'Salary Slip', icon: FileSpreadsheet, path: '/salary-slip' },
+  { name: 'Salary Slip', icon: FileSpreadsheet, path: '/employee/salary-slip' },
 ];
 
 interface SidebarProps {

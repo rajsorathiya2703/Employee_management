@@ -15,7 +15,8 @@
     "seed:expenses": "tsx src/seed/expense.seed.ts",
     "seed:auth": "tsx src/seed/auth-employee.seed.ts",
     "seed:second-user": "tsx src/seed/second-user.seed.ts",
-    "seed:advance-salary": "tsx src/seed/advance-salary.seed.ts"
+    "seed:advance-salary": "tsx src/seed/advance-salary.seed.ts",
+    "seed:salary-slip": "tsx src/seed/salary-slip.seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +34,7 @@
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.11.0",
+    "multer": "^2.1.1",
     "nodemailer": "^8.0.10",
     "prisma": "^6.19.3"
   },
@@ -41,6 +43,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/morgan": "^1.9.10",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.19.19",
     "tsx": "^4.22.4",
     "typescript": "^5.9.3"

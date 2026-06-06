@@ -1,158 +1,103 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { CreditCard, Trash2 } from 'lucide-react';
+import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import AdvancedDataTable from '../../../component/common/AdvancedDataTable';
+import AdvanceSalaryDialog, { formatAdvanceRequest } from './[id]/page';
 import {
   getAdvanceRequests,
   deleteAdvanceRequest,
 } from '../../../service/advance-salary.service';
 import type { AdvanceRequest, AdvanceStatus, AdvanceRequestRaw } from '../../../types';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-/**
- * Format date to readable format: "04:12 PM, 08th Sep 2025"
- */
-const formatDateTime = (isoString: string): string => {
-  const date = new Date(isoString);
-  const time = date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
-  const day = date.getDate();
-  const month = date.toLocaleString('en-US', { month: 'short' });
-  const year = date.getFullYear();
-  
-  return `${time}, ${day.toString().padStart(2, '0')}${getOrdinalSuffix(day)} ${month} ${year}`;
-};
-
-/**
- * Get ordinal suffix (st, nd, rd, th)
- */
-const getOrdinalSuffix = (day: number): string => {
-  if (day % 10 === 1 && day % 100 !== 11) return 'st';
-  if (day % 10 === 2 && day % 100 !== 12) return 'nd';
-  if (day % 10 === 3 && day % 100 !== 13) return 'rd';
-  return 'th';
-};
-
-/**
- * Convert API status to UI status
- */
-const toUiStatus = (raw: string): AdvanceStatus => {
-  if (raw === 'APPROVED') return 'Approved';
-  if (raw === 'DECLINED') return 'Declined';
-  return 'Pending';
-};
-
-/**
- * Format salary month from "2025-08" to "August-2025"
- */
-const formatSalaryMonth = (salaryMonth: string): string => {
-  const [year, month] = salaryMonth.split('-');
-  const date = new Date(parseInt(year), parseInt(month) - 1);
-  const monthName = date.toLocaleString('en-US', { month: 'long' });
-  return `${monthName}-${year}`;
-};
-
-/**
- * Convert raw API response to UI format
- */
-const formatAdvanceRequest = (raw: AdvanceRequestRaw): AdvanceRequest => ({
-  id: raw.id,
-  status: toUiStatus(raw.status),
-  requestedDate: formatDateTime(raw.createdAt),
-  salaryMonth: formatSalaryMonth(raw.salaryMonth),
-  amount: parseFloat(raw.amount).toFixed(2),
-  remark: raw.remark,
-  declinedReason: raw.declinedReason || '—',
-  resolvedDate: raw.resolvedAt ? formatDateTime(raw.resolvedAt) : '—',
-});
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ApplyAdvance() {
   const { user } = useAuth();
   const EMPLOYEE_ID = user?.id ?? 1;
-  const [requests, setRequests] = useState<AdvanceRequest[]>([]);
+
+  const [requests, setRequests]       = useState<AdvanceRequest[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading]           = useState(false);
+  const [pageError, setPageError]       = useState<string | null>(null);
+  const [showDialog, setShowDialog]     = useState(false);
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
 
-  /**
-   * Fetch advance requests from API
-   */
+  // ── Fetch ────────────────────────────────────────────────────────────────
+
   const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
+      setPageError(null);
       const res = await getAdvanceRequests(EMPLOYEE_ID, {
         pageIndex: pagination.pageIndex,
-        pageSize: pagination.pageSize,
+        pageSize:  pagination.pageSize,
       });
-      
       const { data, pagination: meta } = res.data;
       setRequests((data as AdvanceRequestRaw[]).map(formatAdvanceRequest));
       setTotalRecords(meta.total);
     } catch (err) {
-      const message = (err as Error).message || 'Failed to fetch advance requests';
-      setError(message);
+      setPageError((err as Error).message || 'Failed to fetch advance requests');
       console.error('Failed to fetch advance requests:', err);
     } finally {
       setLoading(false);
     }
-  }, [pagination.pageIndex, pagination.pageSize]);
+  }, [pagination.pageIndex, pagination.pageSize, EMPLOYEE_ID]);
 
-  /**
-   * Fetch requests on mount and when pagination changes
-   */
-  useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]);
+  useEffect(() => { fetchRequests(); }, [fetchRequests]);
 
-  /**
-   * Handle delete request
-   */
+  // ── Optimistic insert ────────────────────────────────────────────────────
+
+  const handleCreated = (newRequest: AdvanceRequest) => {
+    setRequests((prev) => [newRequest, ...prev]);
+    setTotalRecords((prev) => prev + 1);
+  };
+
+  // ── Delete ───────────────────────────────────────────────────────────────
+
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this request? Only pending requests can be deleted.')) {
+    if (!window.confirm('Are you sure you want to delete this request? Only pending requests can be deleted.'))
       return;
-    }
-
     try {
       await deleteAdvanceRequest(id);
-      // Refetch the list after deletion
-      fetchRequests();
+      setRequests((prev) => prev.filter((r) => r.id !== id));
+      setTotalRecords((prev) => Math.max(0, prev - 1));
     } catch (err) {
-      const message = (err as Error).message || 'Failed to delete request';
-      setError(message);
+      setPageError((err as Error).message || 'Failed to delete request');
       console.error('Failed to delete request:', err);
     }
   };
 
-  /**
-   * Define table columns
-   */
+  // ── Columns ──────────────────────────────────────────────────────────────
+
   const columns = useMemo<ColumnDef<AdvanceRequest, unknown>[]>(
     () => [
-      { header: 'SR. NO', accessorKey: 'id' },
+      {
+        header: 'SR. NO',
+        id: 'serialNo',
+        cell: (info) => (
+          <span className="text-slate-500 font-medium">
+            {pagination.pageIndex * pagination.pageSize + info.row.index + 1}
+          </span>
+        ),
+      },
       {
         header: 'ACTION',
-        accessorKey: 'action',
+        id: 'action',
         cell: ({ row }) => {
           const status: AdvanceStatus = row.original.status;
           return (
             <div className="flex items-center gap-3">
               <span
                 className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap
-                ${status === 'Pending' ? 'bg-amber-50 text-amber-600' : ''}
-                ${status === 'Approved' ? 'bg-emerald-50 text-emerald-600' : ''}
-                ${status === 'Declined' ? 'bg-rose-50 text-rose-600' : ''}
-              `}
+                  ${status === 'Pending'  ? 'bg-amber-50 text-amber-600'   : ''}
+                  ${status === 'Approved' ? 'bg-emerald-50 text-emerald-600' : ''}
+                  ${status === 'Declined' ? 'bg-rose-50 text-rose-600'     : ''}
+                `}
               >
                 {status}
               </span>
@@ -200,50 +145,67 @@ export default function ApplyAdvance() {
         ),
       },
     ],
-    []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pagination.pageIndex, pagination.pageSize]
   );
 
   const pageCount = Math.ceil(totalRecords / pagination.pageSize) || 1;
 
+  // ── Render ───────────────────────────────────────────────────────────────
+
   return (
-    <div className="flex flex-col gap-6 h-full overflow-y-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="text-indigo-500">
-              <CreditCard size={28} strokeWidth={2.5} />
+    <>
+      {/* Add Request Dialog */}
+      <AdvanceSalaryDialog
+        open={showDialog}
+        onClose={() => setShowDialog(false)}
+        employeeId={EMPLOYEE_ID}
+        onCreated={handleCreated}
+      />
+
+      <div className="flex flex-col gap-6 h-full overflow-y-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="text-indigo-500">
+                <CreditCard size={28} strokeWidth={2.5} />
+              </div>
+              <h1 className="text-2xl font-bold text-slate-800">My Advance Salary Requests</h1>
             </div>
-            <h1 className="text-2xl font-bold text-slate-800">My Advance Salary Requests</h1>
+            <p className="text-slate-500 mt-1.5 text-sm">
+              Submit and track your salary advance request approvals
+            </p>
           </div>
-          <p className="text-slate-500 mt-1.5 text-sm">
-            Submit and track your salary advance request approvals
-          </p>
+          <button
+            onClick={() => setShowDialog(true)}
+            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-semibold transition-colors shadow-sm text-sm uppercase tracking-wide"
+          >
+            <Plus size={18} strokeWidth={2.5} />
+            ADD REQUEST
+          </button>
         </div>
-        <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-semibold transition-colors shadow-sm text-sm uppercase tracking-wide">
-          ADD REQUEST ADVANCE SALARY
-        </button>
-      </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-          {error}
+        {/* Error banner */}
+        {pageError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm shrink-0">
+            {pageError}
+          </div>
+        )}
+
+        {/* Table */}
+        <div className="flex-1 min-h-[520px]">
+          <AdvancedDataTable
+            columns={columns}
+            data={requests}
+            totalRecords={totalRecords}
+            pageCount={pageCount}
+            pagination={pagination}
+            setPagination={setPagination}
+            isLoading={loading}
+          />
         </div>
-      )}
-
-      {/* Table Area */}
-      <div className="flex-1 min-h-[520px]">
-        <AdvancedDataTable
-          columns={columns}
-          data={requests}
-          totalRecords={totalRecords}
-          pageCount={pageCount}
-          pagination={pagination}
-          setPagination={setPagination}
-          isLoading={loading}
-        />
       </div>
-    </div>
+    </>
   );
 }

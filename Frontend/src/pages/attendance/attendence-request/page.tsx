@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { ClipboardList, Plus, X, Loader2, Trash2 } from 'lucide-react';
+import { ClipboardList, Plus, Trash2 } from 'lucide-react';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import AdvancedDataTable from '../../../component/common/AdvancedDataTable';
+import NewAttendanceRequestDialog from './[id]/page';
 import {
   getAttendanceRequests,
-  createAttendanceRequest,
   deleteAttendanceRequest,
 } from '../../../service/attendance.service';
 import type { AttendanceRequest, AttendanceRequestRaw, AttendanceRequestType } from '../../../types';
@@ -12,16 +12,13 @@ import { useAuth } from '../../../context/AuthContext';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const EMPLOYEE_ID = 1; // TODO: replace with auth context value
-
-
 const REQUEST_TYPES: { value: AttendanceRequestType; label: string }[] = [
-  { value: 'PUNCH_IN_ADJUSTMENT', label: 'Punch-In Adjustment' },
+  { value: 'PUNCH_IN_ADJUSTMENT',  label: 'Punch-In Adjustment' },
   { value: 'PUNCH_OUT_ADJUSTMENT', label: 'Punch-Out Adjustment' },
-  { value: 'FULL_DAY_PRESENT', label: 'Full Day Present' },
-  { value: 'HALF_DAY_PRESENT', label: 'Half Day Present' },
-  { value: 'WORK_FROM_HOME', label: 'Work From Home' },
-  { value: 'OTHER', label: 'Other' },
+  { value: 'FULL_DAY_PRESENT',     label: 'Full Day Present' },
+  { value: 'HALF_DAY_PRESENT',     label: 'Half Day Present' },
+  { value: 'WORK_FROM_HOME',       label: 'Work From Home' },
+  { value: 'OTHER',                label: 'Other' },
 ];
 
 const TYPE_LABEL: Record<AttendanceRequestType, string> = Object.fromEntries(
@@ -30,10 +27,12 @@ const TYPE_LABEL: Record<AttendanceRequestType, string> = Object.fromEntries(
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-};
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
 
 const toUiStatus = (raw: string): AttendanceRequest['status'] => {
   if (raw === 'APPROVED') return 'Approved';
@@ -52,167 +51,22 @@ const formatRaw = (r: AttendanceRequestRaw): AttendanceRequest => ({
 // ── Status Badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: AttendanceRequest['status'] }) {
-  if (status === 'Approved') {
+  if (status === 'Approved')
     return (
       <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-semibold">
         Approved
       </span>
     );
-  }
-  if (status === 'Declined') {
+  if (status === 'Declined')
     return (
       <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full text-xs font-semibold">
         Declined
       </span>
     );
-  }
   return (
     <span className="bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-xs font-semibold">
       Pending
     </span>
-  );
-}
-
-// ── New Request Modal ────────────────────────────────────────────────────────
-
-interface NewRequestModalProps {
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-function NewRequestModal({ onClose, onSuccess }: NewRequestModalProps) {
-  const [form, setForm] = useState({
-    date: '',
-    type: REQUEST_TYPES[0].value as AttendanceRequestType,
-    reason: '',
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!form.date || !form.reason.trim()) {
-      setError('Please fill in all fields.');
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      await createAttendanceRequest({
-        employeeId: EMPLOYEE_ID,
-        date: new Date(form.date).toISOString(),
-        type: form.type,
-        reason: form.reason.trim(),
-      });
-      onSuccess();
-    } catch (err) {
-      setError((err as Error).message || 'Failed to submit request. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-          <div className="flex items-center gap-2">
-            <ClipboardList size={20} className="text-indigo-500" strokeWidth={2.5} />
-            <h2 className="text-lg font-bold text-slate-800">New Attendance Request</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4">
-          {/* Date */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">
-              Date <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              value={form.date}
-              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-              max={new Date().toISOString().split('T')[0]}
-              className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500"
-            />
-          </div>
-
-          {/* Type */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">
-              Request Type <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={form.type}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, type: e.target.value as AttendanceRequestType }))
-              }
-              className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500"
-            >
-              {REQUEST_TYPES.map(({ value, label }) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Reason */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">
-              Reason <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={form.reason}
-              onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
-              rows={3}
-              placeholder="Describe the reason for your request..."
-              className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 resize-none"
-            />
-          </div>
-
-          {/* Error */}
-          {error && (
-            <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
-          )}
-
-          {/* Actions */}
-          <div className="flex items-center gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 border border-slate-200 text-slate-600 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex-1 flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-60 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                'Submit Request'
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
   );
 }
 
@@ -221,15 +75,18 @@ function NewRequestModal({ onClose, onSuccess }: NewRequestModalProps) {
 export default function AttendanceRequests() {
   const { user } = useAuth();
   const EMPLOYEE_ID = user?.id ?? 1;
+
   const [requests, setRequests] = useState<AttendanceRequest[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
+
+  // ── Fetch ──────────────────────────────────────────────────────────────────
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -246,21 +103,34 @@ export default function AttendanceRequests() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.pageIndex, pagination.pageSize]);
+  }, [pagination.pageIndex, pagination.pageSize, EMPLOYEE_ID]);
 
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
 
+  // ── Optimistic insert ──────────────────────────────────────────────────────
+
+  const handleRequestCreated = (newRequest: AttendanceRequest) => {
+    setRequests((prev) => [newRequest, ...prev]);
+    setTotalRecords((prev) => prev + 1);
+  };
+
+  // ── Delete ─────────────────────────────────────────────────────────────────
+
   const handleDelete = async (id: number) => {
     if (!window.confirm('Delete this request?')) return;
     try {
       await deleteAttendanceRequest(id);
-      fetchRequests();
+      // Remove from local state immediately
+      setRequests((prev) => prev.filter((r) => r.id !== id));
+      setTotalRecords((prev) => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Failed to delete request:', err);
     }
   };
+
+  // ── Columns ────────────────────────────────────────────────────────────────
 
   const columns = useMemo<ColumnDef<AttendanceRequest, unknown>[]>(
     () => [
@@ -279,7 +149,10 @@ export default function AttendanceRequests() {
         header: 'REASON',
         accessorKey: 'reason',
         cell: (info) => (
-          <span className="text-slate-600 max-w-xs block truncate" title={info.getValue() as string}>
+          <span
+            className="text-slate-600 max-w-xs block truncate"
+            title={info.getValue() as string}
+          >
             {info.getValue() as string}
           </span>
         ),
@@ -310,17 +183,17 @@ export default function AttendanceRequests() {
 
   const pageCount = Math.ceil(totalRecords / pagination.pageSize) || 1;
 
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
     <>
-      {showModal && (
-        <NewRequestModal
-          onClose={() => setShowModal(false)}
-          onSuccess={() => {
-            setShowModal(false);
-            fetchRequests();
-          }}
-        />
-      )}
+      {/* New Request Dialog */}
+      <NewAttendanceRequestDialog
+        open={showDialog}
+        onClose={() => setShowDialog(false)}
+        employeeId={EMPLOYEE_ID}
+        onCreated={handleRequestCreated}
+      />
 
       <div className="flex flex-col gap-6 h-full overflow-y-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {/* Page Header */}
@@ -330,10 +203,12 @@ export default function AttendanceRequests() {
               <ClipboardList className="text-slate-800" size={28} strokeWidth={2.5} />
               <h1 className="text-2xl font-bold text-slate-800">Attendance Requests</h1>
             </div>
-            <p className="text-slate-500 mt-1.5 text-sm">Submit and view attendance adjustments</p>
+            <p className="text-slate-500 mt-1.5 text-sm">
+              Submit and view attendance adjustments
+            </p>
           </div>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => setShowDialog(true)}
             className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm"
           >
             <Plus size={18} strokeWidth={2.5} />
@@ -341,7 +216,7 @@ export default function AttendanceRequests() {
           </button>
         </div>
 
-        {/* Table Area */}
+        {/* Table */}
         <div className="flex-1 min-h-[520px]">
           <AdvancedDataTable
             title="Request History"
