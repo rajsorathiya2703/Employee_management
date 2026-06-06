@@ -40,8 +40,6 @@ const router = (0, express_1.Router)();
 router.post("/", controller.createAdvanceRequest);
 // GET    /api/advance-salary/:employeeId — paginated list for an employee
 router.get("/:employeeId", controller.getAdvanceRequests);
-// GET    /api/advance-salary/:employeeId/history — paginated payout history
-router.get("/:employeeId/history", controller.getAdvanceHistory);
 // DELETE /api/advance-salary/:id      — delete a pending request
 router.delete("/:id", controller.deleteAdvanceRequest);
 exports.default = router;

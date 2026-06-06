@@ -21,8 +21,8 @@ export const getAllCirculars = async (query: CircularQuery) => {
 
   if (search) {
     where.OR = [
-      { circularTitle: { contains: search, mode: "insensitive" } },
-      { circularDescription: { contains: search, mode: "insensitive" } },
+      { circularTitle: { contains: search } },
+      { circularDescription: { contains: search } },
     ];
   }
 

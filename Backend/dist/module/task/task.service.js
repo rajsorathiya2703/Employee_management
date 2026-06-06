@@ -15,8 +15,8 @@ const getAllTasks = async (query) => {
     const where = {};
     if (search) {
         where.OR = [
-            { taskName: { contains: search, mode: "insensitive" } },
-            { description: { contains: search, mode: "insensitive" } },
+            { taskName: { contains: search } },
+            { description: { contains: search } },
         ];
     }
     if (status) {

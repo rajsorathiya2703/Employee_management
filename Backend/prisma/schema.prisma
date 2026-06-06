@@ -182,13 +182,13 @@ model Expense {
   date               DateTime
   siteName           String
 
-  amount             Decimal       @db.Decimal(10, 2)
+  amount             Decimal
 
   category           String
   expenseType        ExpenseType   @default(AMOUNT_WISE)
 
   unit               String?
-  unitRate           Decimal?      @db.Decimal(10, 2)
+  unitRate           Decimal?
 
   multiLevelApproval String?
 
@@ -215,7 +215,7 @@ model AdvanceSalaryRequest {
   employee       Employee             @relation(fields: [employeeId], references: [id])
 
   salaryMonth    String               // e.g. "2025-08"
-  amount         Decimal              @db.Decimal(10, 2)
+  amount         Decimal
   remark         String
 
   status         AdvanceSalaryStatus  @default(PENDING)
@@ -252,7 +252,7 @@ model SalarySlip {
   presentDays      Int    @default(0)
   paidLeaves       Float  @default(0)
   unpaidLeaves     Float  @default(0)
-  joiningGrossSalary Decimal @default(0) @db.Decimal(12,2)
+  joiningGrossSalary Decimal @default(0)
 
   // Earnings (stored as JSON array: [{heading, amount}])
   earnings       Json     @default("[]")
@@ -261,9 +261,9 @@ model SalarySlip {
   deductions     Json     @default("[]")
 
   // Computed totals
-  grossSalary    Decimal  @db.Decimal(12,2) @default(0)
-  totalDeductions Decimal @db.Decimal(12,2) @default(0)
-  netPay         Decimal  @db.Decimal(12,2) @default(0)
+  grossSalary    Decimal  @default(0)
+  totalDeductions Decimal @default(0)
+  netPay         Decimal  @default(0)
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

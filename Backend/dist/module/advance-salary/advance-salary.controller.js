@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAdvanceHistory = exports.deleteAdvanceRequest = exports.getAdvanceRequests = exports.createAdvanceRequest = void 0;
+exports.deleteAdvanceRequest = exports.getAdvanceRequests = exports.createAdvanceRequest = void 0;
 const service = __importStar(require("./advance-salary.service"));
 const client_1 = require("@prisma/client");
 const VALID_STATUSES = Object.values(client_1.AdvanceSalaryStatus);
@@ -138,22 +138,3 @@ const deleteAdvanceRequest = async (req, res) => {
     }
 };
 exports.deleteAdvanceRequest = deleteAdvanceRequest;
-// ── Get History (employee-scoped, paginated) ──────────────────────────────────
-const getAdvanceHistory = async (req, res) => {
-    try {
-        const { employeeId } = req.params;
-        const { pageIndex = "0", pageSize = "10" } = req.query;
-        const result = await service.getAdvanceHistory({
-            employeeId: Number(employeeId),
-            pageIndex,
-            pageSize,
-        });
-        res.status(200).json({ success: true, ...result });
-    }
-    catch (error) {
-        res
-            .status(500)
-            .json({ success: false, message: error.message });
-    }
-};
-exports.getAdvanceHistory = getAdvanceHistory;

@@ -34,14 +34,9 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const controller = __importStar(require("./employee.controller"));
-const auth_middleware_1 = require("../auth/auth.middleware");
-const upload_middleware_1 = require("../../middleware/upload.middleware");
+const ctrl = __importStar(require("./salary-slip.controller"));
 const router = (0, express_1.Router)();
-router.post("/", controller.createEmployee);
-router.get("/", controller.getEmployees);
-// Profile — GET and PATCH by employee id
-router.get("/profile/:id", auth_middleware_1.authenticate, controller.getProfile);
-router.patch("/profile/:id", auth_middleware_1.authenticate, controller.updateProfile);
-router.post("/profile/:id/photo", auth_middleware_1.authenticate, upload_middleware_1.upload.single("photo"), controller.uploadPhoto);
+router.post("/", ctrl.createSalarySlip);
+router.get("/single/:id", ctrl.getSalarySlipById);
+router.get("/:employeeId", ctrl.getSalarySlips);
 exports.default = router;

@@ -66,25 +66,3 @@ export declare const deleteAdvanceRequest: (id: number) => Promise<{
     declinedReason: string | null;
     resolvedAt: Date | null;
 }>;
-export interface GetAdvanceHistoryQuery {
-    employeeId: number;
-    pageIndex?: number | string;
-    pageSize?: number | string;
-}
-export declare const getAdvanceHistory: (query: GetAdvanceHistoryQuery) => Promise<{
-    data: {
-        id: number;
-        createdAt: Date;
-        updatedAt: Date;
-        employeeId: number;
-        amount: Prisma.Decimal;
-        remark: string | null;
-        givenMode: import(".prisma/client").$Enums.AdvanceGivenMode;
-        givenDate: Date;
-    }[];
-    pagination: {
-        total: number;
-        pageIndex: number;
-        pageSize: number;
-    };
-}>;

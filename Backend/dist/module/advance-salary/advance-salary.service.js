@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAdvanceHistory = exports.deleteAdvanceRequest = exports.getAdvanceRequestById = exports.getAdvanceRequests = exports.createAdvanceRequest = void 0;
+exports.deleteAdvanceRequest = exports.getAdvanceRequestById = exports.getAdvanceRequests = exports.createAdvanceRequest = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const client_1 = require("@prisma/client");
 // ── Service Methods ───────────────────────────────────────────────────────────
@@ -63,24 +63,3 @@ const deleteAdvanceRequest = async (id) => {
     return prisma_1.default.advanceSalaryRequest.delete({ where: { id } });
 };
 exports.deleteAdvanceRequest = deleteAdvanceRequest;
-const getAdvanceHistory = async (query) => {
-    const { employeeId, pageIndex = 0, pageSize = 10 } = query;
-    const pageIdx = Number(pageIndex);
-    const limit = Number(pageSize);
-    const skip = pageIdx * limit;
-    const where = { employeeId: Number(employeeId) };
-    const [data, total] = await Promise.all([
-        prisma_1.default.advanceSalaryHistory.findMany({
-            where,
-            skip,
-            take: limit,
-            orderBy: { givenDate: "desc" },
-        }),
-        prisma_1.default.advanceSalaryHistory.count({ where }),
-    ]);
-    return {
-        data,
-        pagination: { total, pageIndex: pageIdx, pageSize: limit },
-    };
-};
-exports.getAdvanceHistory = getAdvanceHistory;

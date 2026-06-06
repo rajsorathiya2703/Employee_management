@@ -28,6 +28,7 @@ const app = express();
 //   CLIENT_URL=https://your-app.vercel.app,https://your-app-git-main.vercel.app
 const allowedOrigins: string[] = [
   "http://localhost:5173",
+  "http://5173",
   "http://localhost:3000",
   ...(process.env.CLIENT_URL
     ? process.env.CLIENT_URL.split(",").map((u) => u.trim()).filter(Boolean)

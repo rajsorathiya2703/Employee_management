@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEmployees = exports.createEmployee = void 0;
+exports.uploadPhoto = exports.updateProfile = exports.getProfile = exports.getEmployees = exports.createEmployee = void 0;
 const employeeService = __importStar(require("./employee.service"));
 const createEmployee = async (req, res) => {
     try {
@@ -50,3 +50,58 @@ const getEmployees = async (_req, res) => {
     res.json({ success: true, data: employees });
 };
 exports.getEmployees = getEmployees;
+// ── Profile ───────────────────────────────────────────────────────────────────
+const getProfile = async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        if (isNaN(id)) {
+            res.status(400).json({ success: false, message: "Invalid employee id." });
+            return;
+        }
+        const profile = await employeeService.getProfileById(id);
+        if (!profile) {
+            res.status(404).json({ success: false, message: "Employee not found." });
+            return;
+        }
+        res.json({ success: true, data: profile });
+    }
+    catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+exports.getProfile = getProfile;
+const updateProfile = async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        if (isNaN(id)) {
+            res.status(400).json({ success: false, message: "Invalid employee id." });
+            return;
+        }
+        const updated = await employeeService.updateProfile(id, req.body);
+        res.json({ success: true, message: "Profile updated successfully.", data: updated });
+    }
+    catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+exports.updateProfile = updateProfile;
+const uploadPhoto = async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        if (isNaN(id)) {
+            res.status(400).json({ success: false, message: "Invalid employee id." });
+            return;
+        }
+        if (!req.file) {
+            res.status(400).json({ success: false, message: "No file uploaded." });
+            return;
+        }
+        const photoUrl = `/uploads/profiles/${req.file.filename}`;
+        const updated = await employeeService.updateProfile(id, { profilePhoto: photoUrl });
+        res.json({ success: true, message: "Profile photo updated successfully.", data: updated });
+    }
+    catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+exports.uploadPhoto = uploadPhoto;
