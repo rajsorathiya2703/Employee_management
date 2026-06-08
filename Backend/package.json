@@ -8,6 +8,8 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "postbuild": "prisma generate",
+    "db:migrate": "node scripts/prisma-run.js migrate deploy",
+    "db:fix-refresh-token": "node scripts/prisma-run.js db execute --schema prisma/schema.prisma --file prisma/migrations/20260608120000_refresh_token_text/migration.sql",
     "seed:tasks": "tsx src/seed/task.seed.ts",
     "seed:circulars": "tsx src/seed/circular.seed.ts",
     "seed:attendance": "tsx src/seed/my-attendance.seed.ts",
