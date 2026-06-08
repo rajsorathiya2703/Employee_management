@@ -34,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetPassword = exports.verifyOtp = exports.forgotPassword = exports.getMe = exports.logout = exports.refreshToken = exports.login = exports.register = void 0;
+const cookie_options_1 = require("../../config/cookie-options");
 const service = __importStar(require("./auth.service"));
 // ── Register ──────────────────────────────────────────────────────────────────
 const register = async (req, res) => {
@@ -79,13 +80,7 @@ const login = async (req, res) => {
             return;
         }
         const result = await service.login(email, password);
-        // Send refresh token as httpOnly cookie
-        res.cookie("refreshToken", result.refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        });
+        res.cookie("refreshToken", result.refreshToken, cookie_options_1.refreshTokenCookieOptions);
         res.status(200).json({
             success: true,
             message: "Logged in successfully.",
@@ -109,12 +104,7 @@ const refreshToken = async (req, res) => {
             return;
         }
         const tokens = await service.refreshTokens(token);
-        res.cookie("refreshToken", tokens.refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
+        res.cookie("refreshToken", tokens.refreshToken, cookie_options_1.refreshTokenCookieOptions);
         res.status(200).json({
             success: true,
             data: { accessToken: tokens.accessToken },
@@ -131,7 +121,7 @@ const logout = async (req, res) => {
         if (req.user?.id) {
             await service.logout(req.user.id);
         }
-        res.clearCookie("refreshToken");
+        res.clearCookie("refreshToken", cookie_options_1.refreshTokenCookieOptions);
         res.status(200).json({ success: true, message: "Logged out successfully." });
     }
     catch (error) {

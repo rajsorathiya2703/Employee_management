@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { refreshTokenCookieOptions } from "../../config/cookie-options";
 import * as service from "./auth.service";
 
 // ── Register ──────────────────────────────────────────────────────────────────
@@ -53,13 +54,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const result = await service.login(email, password);
 
-    // Send refresh token as httpOnly cookie
-    res.cookie("refreshToken", result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    res.cookie("refreshToken", result.refreshToken, refreshTokenCookieOptions);
 
     res.status(200).json({
       success: true,
@@ -91,12 +86,7 @@ export const refreshToken = async (
 
     const tokens = await service.refreshTokens(token);
 
-    res.cookie("refreshToken", tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", tokens.refreshToken, refreshTokenCookieOptions);
 
     res.status(200).json({
       success: true,
@@ -115,7 +105,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
       await service.logout(req.user.id);
     }
 
-    res.clearCookie("refreshToken");
+    res.clearCookie("refreshToken", refreshTokenCookieOptions);
 
     res.status(200).json({ success: true, message: "Logged out successfully." });
   } catch (error) {

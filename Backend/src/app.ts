@@ -28,20 +28,35 @@ const app = express();
 //   CLIENT_URL=https://your-app.vercel.app,https://your-app-git-main.vercel.app
 const allowedOrigins: string[] = [
   "http://localhost:5173",
-  "http://5173",
+  "http://127.0.0.1:5173",
   "http://localhost:3000",
+  "http://127.0.0.1:3000",
   ...(process.env.CLIENT_URL
     ? process.env.CLIENT_URL.split(",").map((u) => u.trim()).filter(Boolean)
     : []),
 ];
 
+const isOriginAllowed = (origin: string): boolean => {
+  if (allowedOrigins.includes(origin)) return true;
+
+  // Production: allow Vercel production + preview deployments
+  if (
+    process.env.NODE_ENV === "production" &&
+    /^https:\/\/[\w.-]+\.vercel\.app$/.test(origin)
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (Postman, curl, server-side)
+      // Allow requests with no origin (Postman, curl, mobile apps)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      callback(new Error(`CORS: origin '${origin}' not allowed`));
+      if (isOriginAllowed(origin)) return callback(null, true);
+      callback(null, false);
     },
     credentials: true, // required for httpOnly cookie + withCredentials
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

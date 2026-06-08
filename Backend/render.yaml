@@ -8,13 +8,14 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      # Set your TiDB Cloud connection string in the Render dashboard.
-      # Must include sslaccept=strict (auto-added for *.tidbcloud.com if omitted).
+      # REQUIRED: TiDB Cloud MySQL URL (sslaccept=strict is auto-added for *.tidbcloud.com).
       - key: DATABASE_URL
         sync: false
-      # Set this to your Vercel frontend URL (no trailing slash).
-      # Multiple URLs: comma-separated, e.g. https://app.vercel.app,https://app-git-main.vercel.app
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
       - key: CLIENT_URL
-        value: https://your-frontend.vercel.app
+        value: https://employee-management-livid-rho.vercel.app
 
 # Database is hosted on TiDB Cloud — set DATABASE_URL manually in Render dashboard.
