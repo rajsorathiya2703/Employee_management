@@ -5,9 +5,9 @@
   "main": "src/server.ts",
   "scripts": {
     "start": "node dist/server.js",
+    "prestart": "node scripts/prisma-run.js generate",
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "postbuild": "prisma generate",
+    "build": "node scripts/prisma-run.js generate && tsc",
     "db:migrate": "node scripts/prisma-run.js migrate deploy",
     "db:fix-refresh-token": "node scripts/prisma-run.js db execute --schema prisma/schema.prisma --file prisma/migrations/20260608120000_refresh_token_text/migration.sql",
     "seed:tasks": "tsx src/seed/task.seed.ts",
