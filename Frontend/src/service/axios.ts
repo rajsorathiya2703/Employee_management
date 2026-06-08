@@ -1,6 +1,11 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from "axios";
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const PRODUCTION_API_URL =
+  "https://employee-management-by-minehrsolution.onrender.com/api";
+
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? PRODUCTION_API_URL : "http://localhost:5000/api");
 export const BACKEND_URL = API_BASE_URL.replace(/\/api$/, "");
 
 const axiosInstance: AxiosInstance = axios.create({
