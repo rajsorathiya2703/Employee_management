@@ -12,6 +12,8 @@ import expenseRoutes from "./module/expense/expense.routes";
 import authRoutes from "./module/auth/auth.routes";
 import advanceSalaryRoutes from "./module/advance-salary/advance-salary.routes";
 import salarySlipRoutes from "./module/salary-slip/salary-slip.routes";
+import visitRoutes from "./module/visit/visit.routes";
+import loanRoutes from "./module/loan/loan.routes";
 
 const app = express();
 
@@ -32,7 +34,9 @@ const allowedOrigins: string[] = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   ...(process.env.CLIENT_URL
-    ? process.env.CLIENT_URL.split(",").map((u) => u.trim()).filter(Boolean)
+    ? process.env.CLIENT_URL.split(",")
+        .map((u) => u.trim().replace(/\/$/, ""))
+        .filter(Boolean)
     : []),
 ];
 
@@ -100,6 +104,8 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/advance-salary", advanceSalaryRoutes);
 app.use("/api/salary-slips", salarySlipRoutes);
+app.use("/api/visits", visitRoutes);
+app.use("/api/loan", loanRoutes);
 
 /*
 |--------------------------------------------------------------------------

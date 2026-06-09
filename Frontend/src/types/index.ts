@@ -242,6 +242,69 @@ export interface AdvanceHistory {
   remark: string;
 }
 
+// ─── Visit Management ────────────────────────────────────────────────────────
+
+export type VisitCategory = "SELF" | "OTHER_EMPLOYEE" | "VISIT_WITH";
+export type VisitPurpose =
+  | "CLIENT_MEETING"
+  | "SITE_INSPECTION"
+  | "PRODUCT_DEMO"
+  | "FOLLOW_UP"
+  | "SUPPORT_VISIT"
+  | "OTHER";
+export type VisitScheduleType = "SCHEDULED" | "UNSCHEDULED";
+export type VisitLocationMode = "PHYSICAL" | "VIRTUAL";
+export type VisitStatusUi = "Scheduled" | "Completed" | "Cancelled";
+
+export interface CustomerOption {
+  id: number;
+  name: string;
+  code: string | null;
+}
+
+export interface VisitEmployeeRef {
+  id: number;
+  name: string;
+}
+
+/** Raw shape returned by the API */
+export interface VisitRaw {
+  id: number;
+  employeeId: number;
+  customerId: number;
+  visitDate: string;
+  purpose: VisitPurpose;
+  scheduleType: VisitScheduleType;
+  locationMode: VisitLocationMode;
+  category: VisitCategory;
+  companionEmployeeId: number | null;
+  remarks: string | null;
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
+  createdById: number;
+  createdAt: string;
+  updatedAt: string;
+  employee: VisitEmployeeRef;
+  customer: CustomerOption;
+  companionEmployee: VisitEmployeeRef | null;
+  createdBy: VisitEmployeeRef;
+}
+
+/** Formatted for display in the table */
+export interface Visit {
+  id: number;
+  employeeName: string;
+  customerName: string;
+  visitDate: string;
+  purpose: string;
+  visitType: string;
+  locationMode: string;
+  category: string;
+  companionName: string;
+  remarks: string;
+  status: VisitStatusUi;
+  _raw?: VisitRaw;
+}
+
 // ─── Employee ────────────────────────────────────────────────────────────────
 
 export interface Employee {
@@ -281,4 +344,41 @@ export interface SalarySlipRaw {
   netPay: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// ─── Loan Management ────────────────────────────────────────────────────────
+
+export type LoanStatus = "Pending" | "Approved" | "Rejected" | "Disbursed" | "Repaid";
+
+/** Raw shape returned by the API */
+export interface LoanRequestRaw {
+  id: number;
+  employeeId: number;
+  loanAmount: string;        // Decimal as string
+  reason: string;
+  repaymentPeriod: number;   // in months
+  status: "PENDING" | "APPROVED" | "REJECTED" | "DISBURSED" | "REPAID";
+  approvedAmount: string | null;
+  disbursedAmount: string | null;
+  approvedAt: string | null;
+  rejectionReason: string | null;
+  disbursedAt: string | null;
+  repaidAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Formatted for display in the table */
+export interface LoanRequest {
+  id: number;
+  status: LoanStatus;
+  requestedDate: string;
+  loanAmount: string;
+  reason: string;
+  repaymentPeriod: number;
+  approvedAmount: string;
+  rejectionReason: string;
+  approvedDate: string;
+  disbursedDate: string;
+  repaidDate: string;
 }

@@ -15,6 +15,9 @@ import ApplyAdvance from './pages/advance-salary/apply-advace/page';
 import AdvanceHistory from './pages/advance-salary/advanc-history/page';
 import SalarySlipPage from './pages/salary-slip/page';
 import MyProfilePage from './pages/profile/page';
+import VisitManagement from './pages/visit-management/page';
+import ApplyLoan from './pages/loan/apply-loan/page';
+import LoanHistory from './pages/loan/loan-history/page';
 
 function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -55,6 +58,9 @@ export default function App() {
           <Route path="employee/advance-salary/history" element={<AdvanceHistory />} />
           <Route path="employee/salary-slip" element={<SalarySlipPage />} />
           <Route path="employee/profile" element={<MyProfilePage />} />
+          <Route path="employee/visits" element={<VisitManagement />} />
+          <Route path="loan/apply" element={<ApplyLoan />} />
+          <Route path="loan/history" element={<LoanHistory />} />
         </Route>
       </Route>
 

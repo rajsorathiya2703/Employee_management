@@ -9,6 +9,7 @@ import {
   Landmark,
   CreditCard,
   FileSpreadsheet,
+  MapPin,
   ChevronRight,
   ChevronDown,
   Building2,
@@ -50,7 +51,16 @@ const navItems: NavItem[] = [
     ],
   },
   { name: 'My Expenses', icon: Receipt, path: '/employee/expenses' },
-  { name: 'Loan', icon: Landmark, path: '/loan', hasSubmenu: true },
+  {
+    name: 'Loan',
+    icon: Landmark,
+    path: '/loan',
+    hasSubmenu: true,
+    subItems: [
+      { name: 'Apply Loan', path: '/loan/apply' },
+      { name: 'Loan History', path: '/loan/history' },
+    ],
+  },
   {
     name: 'Advance Salary',
     icon: CreditCard,
@@ -62,6 +72,7 @@ const navItems: NavItem[] = [
     ],
   },
   { name: 'Salary Slip', icon: FileSpreadsheet, path: '/employee/salary-slip' },
+  { name: 'Visit Management', icon: MapPin, path: '/employee/visits' },
 ];
 
 interface SidebarProps {

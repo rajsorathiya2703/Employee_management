@@ -75,6 +75,10 @@ model Employee {
   expenses            Expense[]
   advanceRequests     AdvanceSalaryRequest[]
   salarySlips         SalarySlip[]
+  visitsOwned         Visit[]  @relation("VisitOwner")
+  visitsAsCompanion   Visit[]  @relation("VisitCompanion")
+  visitsCreated       Visit[]  @relation("VisitCreatedBy")
+  loanRequests        LoanRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -270,4 +274,113 @@ model SalarySlip {
 
   @@unique([employeeId, salaryMonth])
   @@map("salary_slips")
+}
+
+// ─── Visit Management ────────────────────────────────────────────────────────
+
+enum VisitCategory {
+  SELF
+  OTHER_EMPLOYEE
+  VISIT_WITH
+}
+
+enum VisitPurpose {
+  CLIENT_MEETING
+  SITE_INSPECTION
+  PRODUCT_DEMO
+  FOLLOW_UP
+  SUPPORT_VISIT
+  OTHER
+}
+
+enum VisitScheduleType {
+  SCHEDULED
+  UNSCHEDULED
+}
+
+enum VisitLocationMode {
+  PHYSICAL
+  VIRTUAL
+}
+
+enum VisitStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String?  @unique
+  isActive  Boolean  @default(true)
+  visits    Visit[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customers")
+}
+
+model Visit {
+  id                  Int               @id @default(autoincrement())
+
+  employeeId          Int
+  employee            Employee          @relation("VisitOwner", fields: [employeeId], references: [id])
+
+  customerId          Int
+  customer            Customer          @relation(fields: [customerId], references: [id])
+
+  visitDate           DateTime
+  purpose             VisitPurpose      @default(CLIENT_MEETING)
+  scheduleType        VisitScheduleType @default(SCHEDULED)
+  locationMode        VisitLocationMode @default(PHYSICAL)
+  category            VisitCategory     @default(SELF)
+
+  companionEmployeeId Int?
+  companionEmployee   Employee?         @relation("VisitCompanion", fields: [companionEmployeeId], references: [id])
+
+  remarks             String?           @db.Text
+  status              VisitStatus       @default(SCHEDULED)
+
+  createdById         Int
+  createdBy           Employee          @relation("VisitCreatedBy", fields: [createdById], references: [id])
+
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@map("visits")
+}
+
+// ─── Loan Management ────────────────────────────────────────────────────────────
+
+enum LoanStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DISBURSED
+  REPAID
+}
+
+model LoanRequest {
+  id                  Int          @id @default(autoincrement())
+
+  employeeId          Int
+  employee            Employee     @relation(fields: [employeeId], references: [id])
+
+  loanAmount          Decimal
+  reason              String       @db.Text
+  repaymentPeriod     Int          // in months
+
+  status              LoanStatus   @default(PENDING)
+  approvedAmount      Decimal?
+  disbursedAmount     Decimal?
+  approvedAt          DateTime?
+  rejectionReason     String?
+  disbursedAt         DateTime?
+  repaidAt            DateTime?
+
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@map("loan_requests")
 }

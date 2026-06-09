@@ -25,6 +25,10 @@ interface AdvancedDataTableProps<T extends object> {
   onMonthYearGet?: () => void;
   /** Optional: render expanded content below a row. Return null/undefined to show nothing. */
   expandedRowContent?: (row: T) => ReactNode;
+  /** Custom empty-state message */
+  emptyMessage?: string;
+  /** Custom empty-state icon */
+  emptyIcon?: ReactNode;
 }
 
 export default function AdvancedDataTable<T extends object>({
@@ -40,6 +44,8 @@ export default function AdvancedDataTable<T extends object>({
   showMonthYearFilter,
   onMonthYearGet,
   expandedRowContent,
+  emptyMessage = 'No Data Available !',
+  emptyIcon,
 }: AdvancedDataTableProps<T>) {
   const table = useReactTable<T>({
     data,
@@ -178,8 +184,10 @@ export default function AdvancedDataTable<T extends object>({
               <tr>
                 <td colSpan={columns.length} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center text-slate-400">
-                    <AlertCircle size={40} strokeWidth={1.5} className="mb-3 text-slate-400" />
-                    <p className="text-base font-medium">No Data Available !</p>
+                    {emptyIcon ?? (
+                      <AlertCircle size={40} strokeWidth={1.5} className="mb-3 text-slate-400" />
+                    )}
+                    <p className="text-base font-medium">{emptyMessage}</p>
                   </div>
                 </td>
               </tr>

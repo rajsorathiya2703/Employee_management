@@ -29,6 +29,17 @@ export interface UpdateProfilePayload {
   profilePhoto?: string;
 }
 
+export interface EmployeeListItem {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export const getEmployees = () =>
+  axiosInstance.get<{ success: boolean; data: EmployeeListItem[] }>(
+    "/employees"
+  );
+
 export const getEmployeeProfile = (id: number) =>
   axiosInstance.get<{ success: boolean; data: EmployeeProfile }>(
     `/employees/profile/${id}`

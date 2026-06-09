@@ -18,6 +18,7 @@ import {
   getTodaySessions,
 } from '../service/attendance.service';
 import { useAuth } from '../context/AuthContext';
+import { getMonthlyVisitCount } from '../service/visit.service';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -250,11 +251,21 @@ function PunchInCard() {
 export default function Dashboard() {
   const { user } = useAuth();
   const firstName = user?.name?.split(' ')[0] ?? 'there';
+  const EMPLOYEE_ID = user?.id ?? 1;
+
+  const [thisMonthVisit, setThisMonthVisit] = useState(0);
+
+  useEffect(() => {
+    getMonthlyVisitCount(EMPLOYEE_ID)
+      .then((res) => setThisMonthVisit(res.data?.data?.count ?? 0))
+      .catch(() => setThisMonthVisit(0));
+  }, [EMPLOYEE_ID]);
+
   const stats = {
     holidays: 0,
     assets: 0,
     task: 0,
-    thisMonthVisit: 0,
+    thisMonthVisit,
     circular: 0,
     thisMonthLeaves: 0,
     thisMonthExpense: '0.00',

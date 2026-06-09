@@ -7,7 +7,7 @@
     "start": "node dist/server.js",
     "prestart": "node scripts/prisma-run.js generate",
     "dev": "tsx watch src/server.ts",
-    "build": "node scripts/prisma-run.js generate && tsc",
+    "build": "node scripts/prisma-run.js generate && node scripts/verify-prisma-provider.js && tsc",
     "db:migrate": "node scripts/prisma-run.js migrate deploy",
     "db:fix-refresh-token": "node scripts/prisma-run.js db execute --schema prisma/schema.prisma --file prisma/migrations/20260608120000_refresh_token_text/migration.sql",
     "seed:tasks": "tsx src/seed/task.seed.ts",
@@ -18,7 +18,8 @@
     "seed:auth": "tsx src/seed/auth-employee.seed.ts",
     "seed:second-user": "tsx src/seed/second-user.seed.ts",
     "seed:advance-salary": "tsx src/seed/advance-salary.seed.ts",
-    "seed:salary-slip": "tsx src/seed/salary-slip.seed.ts"
+    "seed:salary-slip": "tsx src/seed/salary-slip.seed.ts",
+    "seed:visits": "tsx src/seed/visit.seed.ts"
   },
   "keywords": [],
   "author": "",
