@@ -79,6 +79,7 @@ export default function ApplyLoan() {
       {
         header: 'SR. NO',
         id: 'serialNo',
+        accessorKey: 'id',
         cell: (info) => (
           <span className="text-slate-500 font-medium">
             {pagination.pageIndex * pagination.pageSize + info.row.index + 1}
@@ -88,6 +89,7 @@ export default function ApplyLoan() {
       {
         header: 'ACTION',
         id: 'action',
+        accessorKey: 'id',
         cell: ({ row }) => {
           const status: LoanStatus = row.original.status;
           return (
@@ -118,7 +120,7 @@ export default function ApplyLoan() {
       },
       {
         header: 'LOAN AMOUNT',
-        id: 'loanAmount',
+        accessorKey: 'loanAmount',
         cell: ({ row }) => (
           <span className="text-slate-700 font-medium">
             ₹{parseFloat(row.original.loanAmount).toLocaleString('en-IN', {
@@ -130,7 +132,7 @@ export default function ApplyLoan() {
       },
       {
         header: 'REPAYMENT PERIOD',
-        id: 'repaymentPeriod',
+        accessorKey: 'repaymentPeriod',
         cell: ({ row }) => (
           <span className="text-slate-700">
             {row.original.repaymentPeriod} months
@@ -139,7 +141,7 @@ export default function ApplyLoan() {
       },
       {
         header: 'REASON',
-        id: 'reason',
+        accessorKey: 'reason',
         cell: ({ row }) => (
           <span className="text-slate-700 max-w-xs truncate">
             {row.original.reason}
@@ -148,7 +150,7 @@ export default function ApplyLoan() {
       },
       {
         header: 'APPROVED AMOUNT',
-        id: 'approvedAmount',
+        accessorKey: 'approvedAmount',
         cell: ({ row }) => (
           <span className="text-slate-700">
             {row.original.approvedAmount === '—'
@@ -162,7 +164,7 @@ export default function ApplyLoan() {
       },
       {
         header: 'REQUESTED DATE',
-        id: 'requestedDate',
+        accessorKey: 'requestedDate',
         cell: ({ row }) => (
           <span className="text-slate-600 text-sm">
             {row.original.requestedDate}
@@ -203,13 +205,14 @@ export default function ApplyLoan() {
       )}
 
       <AdvancedDataTable
-        columns={columns}
+        columns={columns as any}
         data={requests}
-        loading={loading}
+        isLoading={loading}
         pagination={pagination}
-        onPaginationChange={setPagination}
+        setPagination={setPagination}
         totalRecords={totalRecords}
-        noDataMessage="No loan records found. Apply for a loan to get started."
+        pageCount={Math.ceil(totalRecords / pagination.pageSize) || 1}
+        emptyMessage="No loan records found. Apply for a loan to get started."
       />
 
       <LoanDialog

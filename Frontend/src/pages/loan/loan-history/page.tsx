@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { DollarSign, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import AdvancedDataTable from '../../../component/common/AdvancedDataTable';
@@ -53,6 +53,7 @@ export default function LoanHistory() {
       {
         header: 'SR. NO',
         id: 'serialNo',
+        accessorKey: 'id',
         cell: (info) => (
           <span className="text-slate-500 font-medium">
             {pagination.pageIndex * pagination.pageSize + info.row.index + 1}
@@ -61,7 +62,7 @@ export default function LoanHistory() {
       },
       {
         header: 'STATUS',
-        id: 'status',
+        accessorKey: 'status',
         cell: ({ row }) => {
           const status: LoanStatus = row.original.status;
           return (
@@ -81,7 +82,7 @@ export default function LoanHistory() {
       },
       {
         header: 'LOAN AMOUNT',
-        id: 'loanAmount',
+        accessorKey: 'loanAmount',
         cell: ({ row }) => (
           <span className="text-slate-700 font-medium">
             ₹{parseFloat(row.original.loanAmount).toLocaleString('en-IN', {
@@ -93,7 +94,7 @@ export default function LoanHistory() {
       },
       {
         header: 'APPROVED AMOUNT',
-        id: 'approvedAmount',
+        accessorKey: 'approvedAmount',
         cell: ({ row }) => (
           <span className="text-slate-700 font-medium">
             {row.original.approvedAmount === '—'
@@ -107,7 +108,7 @@ export default function LoanHistory() {
       },
       {
         header: 'REPAYMENT PERIOD',
-        id: 'repaymentPeriod',
+        accessorKey: 'repaymentPeriod',
         cell: ({ row }) => (
           <span className="text-slate-700">
             {row.original.repaymentPeriod} months
@@ -116,7 +117,7 @@ export default function LoanHistory() {
       },
       {
         header: 'REQUESTED DATE',
-        id: 'requestedDate',
+        accessorKey: 'requestedDate',
         cell: ({ row }) => (
           <span className="text-slate-600 text-sm">
             {row.original.requestedDate}
@@ -125,7 +126,7 @@ export default function LoanHistory() {
       },
       {
         header: 'APPROVED DATE',
-        id: 'approvedDate',
+        accessorKey: 'approvedDate',
         cell: ({ row }) => (
           <span className="text-slate-600 text-sm">
             {row.original.approvedDate === '—' ? '—' : row.original.approvedDate}
@@ -134,7 +135,7 @@ export default function LoanHistory() {
       },
       {
         header: 'DISBURSED DATE',
-        id: 'disbursedDate',
+        accessorKey: 'disbursedDate',
         cell: ({ row }) => (
           <span className="text-slate-600 text-sm">
             {row.original.disbursedDate === '—' ? '—' : row.original.disbursedDate}
@@ -143,7 +144,7 @@ export default function LoanHistory() {
       },
       {
         header: 'REPAID DATE',
-        id: 'repaidDate',
+        accessorKey: 'repaidDate',
         cell: ({ row }) => (
           <span className="text-slate-600 text-sm">
             {row.original.repaidDate === '—' ? '—' : row.original.repaidDate}
@@ -152,7 +153,7 @@ export default function LoanHistory() {
       },
       {
         header: 'REASON',
-        id: 'reason',
+        accessorKey: 'reason',
         cell: ({ row }) => (
           <span className="text-slate-700 max-w-xs truncate" title={row.original.reason}>
             {row.original.reason}
@@ -184,13 +185,14 @@ export default function LoanHistory() {
       )}
 
       <AdvancedDataTable
-        columns={columns}
+        columns={columns as any}
         data={requests}
-        loading={loading}
+        isLoading={loading}
         pagination={pagination}
-        onPaginationChange={setPagination}
+        setPagination={setPagination}
         totalRecords={totalRecords}
-        noDataMessage="No loan records found."
+        pageCount={Math.ceil(totalRecords / pagination.pageSize) || 1}
+        emptyMessage="No loan records found."
       />
     </div>
   );

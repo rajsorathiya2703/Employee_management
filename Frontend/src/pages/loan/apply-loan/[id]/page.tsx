@@ -191,7 +191,7 @@ export default function LoanDialog({
           step="100"
           min="1"
           required
-          error={errors.loanAmount?.message}
+          errorMessage={errors.loanAmount?.message}
           {...register('loanAmount', {
             required: 'Loan amount is required',
             pattern: {
@@ -233,7 +233,7 @@ export default function LoanDialog({
           label="Reason for Loan"
           placeholder="Explain your reason for requesting this loan..."
           required
-          error={errors.reason?.message}
+          errorMessage={errors.reason?.message}
           {...register('reason', {
             required: 'Reason is required',
             minLength: { value: 10, message: 'Reason must be at least 10 characters' },
